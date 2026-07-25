@@ -65,35 +65,6 @@ void Thunk(char* buffer, const char* relative, char* cursor, RE::BSResource::Tra
     }
 }
 
-FileSizeCache::FileSizeCache()
-{
-    const uintptr_t callsite = REL::Offset(0xD0F987).address();
-    const uintptr_t codecave = REL::Offset(0xD0F8C5).address();
-    const uintptr_t hook     = reinterpret_cast<uintptr_t>(GetFileSizeCached);
-
-    std::memcpy(call, reinterpret_cast<uint8_t*>(callsite), sizeof(call));
-
-    uintptr_t jmpFromCaveAddr = codecave + 12;
-    int32_t caveJmpOffset = static_cast<int32_t>((callsite + 5) - (jmpFromCaveAddr + 5));
-
-    uint8_t payload[17] = { 0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xD0, 0xE9, 0x00, 0x00, 0x00, 0x00 };
-    std::memcpy(&payload[2], &hook, sizeof(uint64_t));
-    std::memcpy(&payload[13], &caveJmpOffset, sizeof(int32_t));
-
-    uint8_t jump[5] = { 0xE9 };
-    int32_t hookJmpOffset = static_cast<int32_t>(codecave - (callsite + 5));    
-    std::memcpy(&jump[1], &hookJmpOffset, sizeof(int32_t));
-
-    REL::safe_write(codecave, payload);
-    REL::safe_write(callsite, jump);
-}
-
-FileSizeCache::~FileSizeCache()
-{
-    const uintptr_t callsite = REL::Offset(0xD0F987).address();
-    REL::safe_write(callsite, call);
-}
-
 SKSEPluginLoad(const SKSE::LoadInterface* a_skse)
 {
     SKSE::Init(a_skse);
