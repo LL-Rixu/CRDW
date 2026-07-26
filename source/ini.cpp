@@ -12,18 +12,18 @@ std::string trim(const std::string& str)
     return (start < end) ? std::string(start, end) : "";
 }
 
-std::tuple<bool, std::string> parseini(void)
+std::tuple<bool, std::string, size_t> parseini(void)
 {
     const std::filesystem::path filename = "Data/SKSE/Plugins/CRDW.ini";
 
     bool showpopup;
     std::string mode;
+    size_t iobuffer = 65568;
     std::ifstream file(filename);
     
     if (!file.is_open())
     {
-        //spdlog::warn("Could not open {}. Using defaults.", filename.c_str());
-        return { true, "LOAD" };;
+        return { true, "LOAD", iobuffer };
     }
 
     std::string line;
@@ -54,12 +54,19 @@ std::tuple<bool, std::string> parseini(void)
             std::string key = trim(line.substr(0, eqPos));
             std::string val = trim(line.substr(eqPos + 1));
 
-            if (currentSection == "General" && key == "ShowPopUp")
+            if (currentSection == "General")
             {
-                std::string lowerVal = val;
-                std::transform(lowerVal.begin(), lowerVal.end(), lowerVal.begin(), ::tolower);
-                showpopup = (lowerVal == "true" || lowerVal == "1");
-            } 
+                if(key == "ShowPopUp")
+                {
+                    std::string lowerVal = val;
+                    std::transform(lowerVal.begin(), lowerVal.end(), lowerVal.begin(), ::tolower);
+                    showpopup = (lowerVal == "true" || lowerVal == "1");
+                }
+                else if(key == "iobuffer")
+                {
+                    iobuffer = std::stoi(val);
+                }
+            }
             else if (currentSection == "Mode" && key == "Mode")
             {
                 mode = val;
@@ -67,5 +74,5 @@ std::tuple<bool, std::string> parseini(void)
         }
     }
 
-    return { showpopup, mode };
+    return { showpopup, mode, iobuffer };
 }

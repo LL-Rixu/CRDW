@@ -76,11 +76,7 @@ public:
 
         if(hFile == INVALID_HANDLE_VALUE) { return; }
 
-        if (!GetFileSizeEx(hFile, reinterpret_cast<LARGE_INTEGER*>(&size))) 
-        {
-            this->~Cache();
-            return;
-        }
+        if (!GetFileSizeEx(hFile, reinterpret_cast<LARGE_INTEGER*>(&size)))  { return; }
 
         hMap = CreateFileMappingA(
             hFile,
@@ -91,11 +87,7 @@ public:
             NULL
         );
 
-        if (!hMap) 
-        {
-            this->~Cache();
-            return;
-        }
+        if (!hMap) { return; }
 
         map = reinterpret_cast<const Entry*>(MapViewOfFile(
             hMap,
@@ -105,31 +97,13 @@ public:
             0
         ));
 
-        if(!map)
-        {
-            this->~Cache();
-            return;
-        }
+        if(!map) { return; }
     }
 
     ~Cache()
     {
-        size = 0;
-
-        if(map)
-        {
-            UnmapViewOfFile(map);
-            map = nullptr;
-        }
-        if(hMap)
-        {
-            CloseHandle(hMap);
-            hMap = INVALID_HANDLE_VALUE;
-        }
-        if(hFile != INVALID_HANDLE_VALUE)
-        {
-            CloseHandle(hFile);
-            hFile = INVALID_HANDLE_VALUE;
-        }
+        if(map) { UnmapViewOfFile(map); }
+        if(hMap) { CloseHandle(hMap); }
+        if(hFile != INVALID_HANDLE_VALUE) { CloseHandle(hFile); }
     }
 };

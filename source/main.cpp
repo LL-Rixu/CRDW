@@ -1,11 +1,15 @@
 #include <cache.h>
+#include <span>
 
-std::tuple<bool, std::string> parseini(void);
+std::tuple<bool, std::string, size_t> parseini(void);
 void CachingDirectoryRecursive(char* buffer, const char* relative, char* cursor, RE::BSResource::LooseFileLocation* location, std::ofstream& file);
+void CustomProcessName(RE::BSResource::Traverser* a_this, const char* a_name, RE::BSResource::Location& a_location);
 
 enum class CacheMode { CACHE, LOAD, NATIVE };
+
 CacheMode mode = CacheMode::LOAD;
 void (*native)(char*, const char*, char*, RE::BSResource::Traverser*, RE::BSResource::LooseFileLocation*) = nullptr;
+std::span<char> iobuffer;
 
 std::string GetCachePath(std::string name)
 {
@@ -15,10 +19,17 @@ std::string GetCachePath(std::string name)
 
 void CacheGenerate(char* buffer, const char* relative, char* cursor, RE::BSResource::LooseFileLocation* location, RE::BSResource::Traverser* traverser)
 {
+    char copy_buffer[MAX_PATH];
+    strcpy_s(copy_buffer, buffer);
+
+    uintptr_t reloff = reinterpret_cast<uintptr_t>(relative) - reinterpret_cast<uintptr_t>(buffer);
+    uintptr_t curoff = reinterpret_cast<uintptr_t>(cursor) - reinterpret_cast<uintptr_t>(buffer);
+
     std::string path = GetCachePath(relative);
 
     std::ofstream file(path, std::ios::binary | std::ios::trunc);
-    CachingDirectoryRecursive(buffer, relative, cursor, location, file);
+    file.rdbuf()->pubsetbuf(iobuffer.data(), iobuffer.size());
+    CachingDirectoryRecursive(copy_buffer, copy_buffer + reloff, copy_buffer + curoff, location, file);
     file.close();
 
     Cache cache(path);
@@ -26,13 +37,14 @@ void CacheGenerate(char* buffer, const char* relative, char* cursor, RE::BSResou
     if(!cache.isOpen())
     {
         spdlog::critical("CacheGenerate: failed to open file {}", path);
+        cache.~Cache();
         return native(buffer, relative, cursor, traverser, location);
     }
 
     for(const auto& entry : cache)
     {
         cache.SetEntry(&entry);
-        traverser->ProcessName(entry.path, *location);
+        CustomProcessName(traverser, entry.path, *location);
     }
 }
 
@@ -45,13 +57,14 @@ void CacheLoad(char* buffer, const char* relative, char* cursor, RE::BSResource:
     if(!cache.isOpen())
     {
         spdlog::warn("CacheLoad: failed to open file {}", path);
+        cache.~Cache();
         return native(buffer, relative, cursor, traverser, location);
     }
 
     for(const auto& entry : cache)
     {
         cache.SetEntry(&entry);
-        traverser->ProcessName(entry.path, *location);
+        CustomProcessName(traverser, entry.path, *location);
     }
 }
 
@@ -65,18 +78,20 @@ void Thunk(char* buffer, const char* relative, char* cursor, RE::BSResource::Tra
     }
 }
 
-SKSEPluginLoad(const SKSE::LoadInterface* a_skse)
+SKSEPluginLoad(const SKSE::LoadInterface* skse)
 {
-    SKSE::Init(a_skse);
+    SKSE::Init(skse);
 
-    SKSE::AllocTrampoline(28);
+    SKSE::AllocTrampoline(14);
     auto& trampoline = SKSE::GetTrampoline();
 
     native = reinterpret_cast<void (*)(char*, const char*, char*, RE::BSResource::Traverser*, RE::BSResource::LooseFileLocation*)>(
         trampoline.write_call<5>(REL::Module::get().base() + 0xd103ad, reinterpret_cast<std::uintptr_t>(Thunk))
     );
 
-    auto [show, selected] = parseini();
+    auto [show, selected, size] = parseini();
+
+    iobuffer = std::span<char>(reinterpret_cast<char*>(malloc(size)), size);
 
     if(show)
     {
@@ -102,7 +117,11 @@ SKSEPluginLoad(const SKSE::LoadInterface* a_skse)
 
     SKSE::GetMessagingInterface()->RegisterListener([](SKSE::MessagingInterface::Message* msg) 
     {
-        if(msg->type == SKSE::MessagingInterface::kDataLoaded) { mode = CacheMode::NATIVE; }
+        if(msg->type == SKSE::MessagingInterface::kDataLoaded) 
+        { 
+            mode = CacheMode::NATIVE;
+            free(iobuffer.data());
+        }
     });
 
     return true;
