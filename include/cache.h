@@ -57,7 +57,7 @@ class Cache : public FileSizeCache
     size_t size = 0;
 
 public:
-    bool isOpen() const { return hFile != INVALID_HANDLE_VALUE && hMap != INVALID_HANDLE_VALUE && map != nullptr; }
+    bool isOpen() const { return hFile != INVALID_HANDLE_VALUE && hMap != INVALID_HANDLE_VALUE && map != nullptr && size != 0; }
 
     const Entry* begin() const { return &map[0]; }
     const Entry* end()   const { return &map[size / sizeof(Entry)]; }

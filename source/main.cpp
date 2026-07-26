@@ -28,6 +28,13 @@ void CacheGenerate(char* buffer, const char* relative, char* cursor, RE::BSResou
     std::string path = GetCachePath(relative);
 
     std::ofstream file(path, std::ios::binary | std::ios::trunc);
+
+    if(!file.is_open())
+    {
+        spdlog::critical("CacheGenerate: failed to open file {}", path);
+        return native(buffer, relative, cursor, traverser, location);
+    }
+
     file.rdbuf()->pubsetbuf(iobuffer.data(), iobuffer.size());
     CachingDirectoryRecursive(copy_buffer, copy_buffer + reloff, copy_buffer + curoff, location, file);
     file.close();

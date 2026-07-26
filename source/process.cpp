@@ -16,9 +16,9 @@ void CustomProcessName(RE::BSResource::Traverser* a_this, const char* path, RE::
     uint32_t ext = *reinterpret_cast<uint32_t*>(id.ext);
     uint32_t lastExt = *reinterpret_cast<uint32_t*>(lastID->ext);
 
-    if (lastExt != ext)
+    if(lastExt != ext)
     {
-        a_this->unkE0 = 0; 
+        a_this->unkE0 = 0;
         *lastID = id;
 
         UpdateCache(*CACHE_PTR);
@@ -27,20 +27,20 @@ void CustomProcessName(RE::BSResource::Traverser* a_this, const char* path, RE::
     RE::BSTSmartPointer<RE::BSResource::Stream> stream;
     RE::BSResource::Location* locationOut = nullptr;
 
-    if (location.DoCreateStream(path, stream, locationOut, false) == RE::BSResource::ErrorCode::kNone) 
+    if(location.DoCreateStream(path, stream, locationOut, false) == RE::BSResource::ErrorCode::kNone)
     {
         void* map = &a_this->unk08;
         
         if (a_this->unkE0 == 0) 
         {
             InsertNoCache(map, &id, &stream);
-        } 
+        }
         else
         {
             void* node = reinterpret_cast<void*>(a_this->unkE0);
             InsertWithCache(node, map, &id, &stream);
         }
-    } 
+    }
 
     BSResourceFileFoundEvent event{ path + 5, &id, &location };
     
