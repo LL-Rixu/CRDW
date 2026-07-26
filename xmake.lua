@@ -2,7 +2,7 @@ set_xmakever("3.0.7")
 
 -- Project details
 set_project("CRDW")
-set_version("1.0.0")
+set_version("1.0.1")
 
 add_defines("SKYRIM_SUPPORT_AE")
 
@@ -31,7 +31,7 @@ target("CRDW")
     add_rules("commonlibsse.plugin", {
         name = "CRDW",
         author = "Rixu",
-        version = "1.0.0",
+        version = "1.0.1",
         description = "Caches the Recrusive Directory Walk"
     })
 
