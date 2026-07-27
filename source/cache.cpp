@@ -1,4 +1,3 @@
-#include <RE/Skyrim.h>
 #include <cache.h>
 
 class DirectorySearch
@@ -69,22 +68,8 @@ public:
     }
     const bool isFile() const { return (data.dwFileAttributes & (FILE_ATTRIBUTE_ARCHIVE | FILE_ATTRIBUTE_NORMAL)) != 0; }
     const char* FileName() const { return data.cFileName; }
+    const uint64_t FileSize() const { return static_cast<uint64_t>(data.nFileSizeHigh) << 32 | static_cast<uint64_t>(data.nFileSizeLow); }
 };
-
-static inline bool CheckArchiveOverwrite(RE::BSResource::LooseFileLocation* location, const char* path, uint64_t* filesize)
-{
-    RE::BSResource::Info info;
-    RE::BSResource::Location* tmp = nullptr;
-    RE::BSTSmartPointer<RE::BSResource::Stream> stream;
-
-    const auto result = location->DoCreateStream(path, stream, tmp, false);
-    if(result != RE::BSResource::ErrorCode::kNone) { return false; }
-
-    stream.get()->DoGetInfo(info);
-    *filesize = info.fileSize;
-
-    return true;
-}
 
 void CachingDirectoryRecursive(char* buffer, const char* relative, char* cursor, RE::BSResource::LooseFileLocation* location, std::ofstream& file)
 {
@@ -109,15 +94,13 @@ void CachingDirectoryRecursive(char* buffer, const char* relative, char* cursor,
         }
         else if(search.isFile())
         {
-            uint64_t filesize;
             strcpy_s(cursor, remaining, search.FileName());
-            if(CheckArchiveOverwrite(location, relative, &filesize))
-            {
-                Entry cache;
-                cache.size = filesize;
-                strcpy_s(cache.path, sizeof(cache.path), relative);
-                file.write(reinterpret_cast<char*>(&cache), sizeof(cache));
-            }
+
+            Entry cache;
+            cache.size = search.FileSize();
+            strcpy_s(cache.path, sizeof(cache.path), relative);
+
+            file.write(reinterpret_cast<char*>(&cache), sizeof(cache));
         }
     }
 }
