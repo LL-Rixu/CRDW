@@ -8,48 +8,49 @@ struct Entry
 {
     char path[MAX_PATH];
     uint64_t size;
+
+    Entry(const char* a_path, const uint64_t a_size): size(a_size) { strcpy_s(path, sizeof(path), a_path); }
 };
 
-class FileSizeCache
+class SizeCache
 {
-    uint8_t call[5];
-    inline static const Entry* entry;
+    uint8_t call[5]; // callsite old value
 
-    static bool GetFileSizeCached(const char* path, uint64_t* size) { return entry->size; }
+    inline static const Entry* entry;
+    inline static const uintptr_t codecave = REL::Offset(0xD0F8C5).address();
+    inline static const uintptr_t callsite = REL::Offset(0xD0F987).address(); 
+
+    void fast_function(void);
+    void thunk_function(void);
+
+    static bool GetSizeCache(const char* path, uint64_t* size) { *size = entry->size; return true; }
+
 public:
+    inline static bool optimization = false;
+
     [[inline]] static void SetEntry(const Entry* a_entry) { entry = a_entry; }
 
-    FileSizeCache()
+    /* install callsite hook */
+    SizeCache()
     {
-        const uintptr_t callsite = REL::Offset(0xD0F987).address();
-        const uintptr_t codecave = REL::Offset(0xD0F8C5).address();
-        const uintptr_t hook     = reinterpret_cast<uintptr_t>(GetFileSizeCached);
-
         std::memcpy(call, reinterpret_cast<uint8_t*>(callsite), sizeof(call));
 
-        uintptr_t jmpFromCaveAddr = codecave + 12;
-        int32_t caveJmpOffset = static_cast<int32_t>((callsite + 5) - (jmpFromCaveAddr + 5));
+        if(optimization) { fast_function(); }
+        else { thunk_function(); }
+        
+        const int32_t offset = static_cast<int32_t>(codecave - callsite - 5);
+        uint8_t hook[5] = { 0xE8, 0x00, 0x00, 0x00, 0x00 };
 
-        uint8_t payload[17] = { 0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xD0, 0xE9, 0x00, 0x00, 0x00, 0x00 };
-        std::memcpy(&payload[2], &hook, sizeof(uint64_t));
-        std::memcpy(&payload[13], &caveJmpOffset, sizeof(int32_t));
+        std::memcpy(&hook[1], &offset, sizeof(int32_t));
 
-        uint8_t jump[5] = { 0xE9 };
-        int32_t hookJmpOffset = static_cast<int32_t>(codecave - (callsite + 5));    
-        std::memcpy(&jump[1], &hookJmpOffset, sizeof(int32_t));
-
-        REL::safe_write(codecave, payload);
-        REL::safe_write(callsite, jump);
+        REL::safe_write(callsite, hook);
     }
 
-    ~FileSizeCache()
-    {
-        const uintptr_t callsite = REL::Offset(0xD0F987).address();
-        REL::safe_write(callsite, call);
-    }
+    /* Restore callsite */
+    ~SizeCache() { REL::safe_write(callsite, call); }
 };
 
-class Cache : public FileSizeCache
+class Cache : public SizeCache
 {
     HANDLE hFile = INVALID_HANDLE_VALUE;
     HANDLE hMap = INVALID_HANDLE_VALUE;

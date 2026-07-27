@@ -1,106 +1,40 @@
 #include <cache.h>
 
-class DirectorySearch
+/*
+    Micro optimisation. 
+    Skip thunk function and write GetFileSizeCached as binary into 26byte codecave
+*/
+void SizeCache::fast_function(void)
 {
-    bool             done;
+    const uint64_t address = reinterpret_cast<uint64_t>(&entry);
+    constexpr uint32_t offset = offsetof(Entry, size);
 
-    HANDLE           handle;
-    WIN32_FIND_DATAA data;
-    char             path[MAX_PATH];
+    uint8_t payload[26] =
+    { 
+        0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // movabs rax, entry
+        0x48, 0x8B, 0x00,                                           // mov rax, [rax]
+        0x48, 0x8B, 0x80, 0x00, 0x00, 0x00, 0x00,                   // mov rax, [rax + offsetof(Entry,size)]
+        0x48, 0x89, 0x02,                                           // mov [rdx], rax
+        0xB0, 0x01,                                                 // mov al, 1
+        0xC3                                                        // ret
+    };
 
-public:
-    DirectorySearch(char* directory): handle(nullptr), done(false)
-    {
-        if (directory == nullptr) 
-        {
-            done = true;
+    std::memcpy(&payload[2],  &address,  sizeof(uint64_t));
+    std::memcpy(&payload[16], &offset,   sizeof(uint32_t));
 
-            return;
-        }
-    
-        strcpy_s(path, sizeof(path), directory);
-        strcat_s(path, sizeof(path), "\\*");
+    REL::safe_write(codecave, payload);
+}
 
-        Next();
-    }
-
-    ~DirectorySearch()
-    {
-        if(handle == INVALID_HANDLE_VALUE) { return; }
-
-        FindClose(handle);
-    }
-
-    bool Done() const { return done; }
-
-    void Next()
-    {
-        if(handle == nullptr)
-        {
-            handle = FindFirstFileA(path, &data);
-            done = handle == INVALID_HANDLE_VALUE ? true : false;
-            return;
-        }
-
-        if(handle == INVALID_HANDLE_VALUE) 
-        { 
-            done = true;
-            return;
-        }
-
-        done = !FindNextFileA(handle, &data);
-    }
-
-    const bool isDirectory() const { return (data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0; }
-    const bool isDot() const
-    {
-        const char* filename = FileName();
-
-        if(filename[0] == '.')
-        {
-            if(filename[1] == '\0' || (filename[1] == '.' && filename[2] == '\0'))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-    const bool isFile() const { return (data.dwFileAttributes & (FILE_ATTRIBUTE_ARCHIVE | FILE_ATTRIBUTE_NORMAL)) != 0; }
-    const char* FileName() const { return data.cFileName; }
-    const uint64_t FileSize() const { return static_cast<uint64_t>(data.nFileSizeHigh) << 32 | static_cast<uint64_t>(data.nFileSizeLow); }
-};
-
-void CachingDirectoryRecursive(char* buffer, const char* relative, char* cursor, RE::BSResource::LooseFileLocation* location, std::ofstream& file)
+void SizeCache::thunk_function(void)
 {
-    for(DirectorySearch search(buffer); !search.Done(); search.Next())
-    {
-        const size_t remaining = static_cast<size_t>(buffer - cursor + MAX_PATH);
+    const uint64_t address = reinterpret_cast<uint64_t>(GetSizeCache);
 
-        if(search.isDirectory())
-        {
-            if(search.isDot()) { continue; }
+    uint8_t payload[14] =
+    { 
+        0xFF, 0x25, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 // jmp qword ptr [rip + 0] 
+    };
 
-            strcpy_s(cursor, remaining, search.FileName());
-            strcat_s(cursor, remaining, "\\");
+    std::memcpy(&payload[6], &address, sizeof(uint64_t));
 
-            CachingDirectoryRecursive(
-                buffer,
-                relative, 
-                cursor + strlen(search.FileName()) + 1,
-                location,
-                file
-            );
-        }
-        else if(search.isFile())
-        {
-            strcpy_s(cursor, remaining, search.FileName());
-
-            Entry cache;
-            cache.size = search.FileSize();
-            strcpy_s(cache.path, sizeof(cache.path), relative);
-
-            file.write(reinterpret_cast<char*>(&cache), sizeof(cache));
-        }
-    }
+    REL::safe_write(codecave, payload);
 }
