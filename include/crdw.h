@@ -37,14 +37,16 @@ public:
         hook.Install(copy);
     }
 
-    template<FixedString path>
-    static inline std::string GetCachePath(std::string name)
+    inline std::string GetCachePath(std::string name)
     {
         std::replace(name.begin(), name.end(), '\\', '_');
 
         for(char& ch : name) { ch = std::tolower(ch); }
         
-        return path.c_str() + name + ".cache";
+        std::string directory(ini["General|CacheDirectory"]);
+        if(directory.back() != '/') { directory.push_back('/'); }
+
+        return directory + name + ".cache";
     }
 
     CRDW();

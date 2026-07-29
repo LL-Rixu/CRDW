@@ -8,7 +8,7 @@ void CRDW::CacheGenerate(char* buffer, const char* relative, char* cursor, RE::B
     uintptr_t reloff = reinterpret_cast<uintptr_t>(relative) - reinterpret_cast<uintptr_t>(buffer);
     uintptr_t curoff = reinterpret_cast<uintptr_t>(cursor) - reinterpret_cast<uintptr_t>(buffer);
 
-    std::string path = GetCachePath<"Data/SKSE/Plugins/">(relative);
+    std::string path = crdw->GetCachePath(relative);
 
     std::span<char>& iobuffer = crdw->iobuffer;
 
@@ -43,7 +43,7 @@ void CRDW::CacheGenerate(char* buffer, const char* relative, char* cursor, RE::B
 
 void CRDW::CacheLoad(char* buffer, const char* relative, char* cursor, RE::BSResource::Traverser* traverser, RE::BSResource::LooseFileLocation* location)
 {
-    std::string path = GetCachePath<"Data/SKSE/Plugins/">(relative);
+    std::string path = crdw->GetCachePath(relative);
 
     Cache cache(path, crdw->ini["Optimization|Experimental"]);
 
