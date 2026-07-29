@@ -3,6 +3,7 @@
 #include <SKSE/SKSE.h>
 #include <RE/Skyrim.h>
 
+#include <ID.h>
 #include <log.h>
 #include <ini.h>
 #include <hook.h>
@@ -24,7 +25,7 @@ public:
     INI<"Data/SKSE/Plugins/CRDW.ini"> ini;
     Logger<"CRDW"> logger;
     std::span<char> iobuffer;
-    Hook<70050> hook;
+    Hook<WalkerID> hook;
 
     template<auto f, typename... Args>
     void Fallback(Args&&... args)

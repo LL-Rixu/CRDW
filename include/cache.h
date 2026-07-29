@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ID.h>
 #include <log.h>
 #include <mmap.h>
 #include <hook.h>
@@ -42,6 +43,6 @@ private:
     }
 
     inline static const Entry* entry;
-    Hook<70164> hook;
+    Hook<GetSizeID> hook;
 };
 

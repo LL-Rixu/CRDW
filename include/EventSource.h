@@ -1,4 +1,5 @@
 #include <RE/Skyrim.h>
+#include <ID.h>
 
 struct BSResourceFileFoundEvent
 {
@@ -14,7 +15,7 @@ namespace RE::BSResource
     public:
         static EventSources* GetSingleton()
         {
-            static REL::Relocation<EventSources**> singleton{ REL::ID(410419) };
+            static REL::Relocation<EventSources**> singleton{ REL::ID(EventSourcesID) }; 
             return *singleton;
         }
 
@@ -25,9 +26,9 @@ namespace RE::BSResource
     };
 }
 
-inline static REL::Relocation<const char*(*)(const char* a_name, const char* a_prefix, void* a_lookupTable)> StripPrefix{ REL::ID(69864) };
-inline static REL::Relocation<void(*)(void* a_mapRoot, RE::BSResource::ID* a_id, RE::BSTSmartPointer<RE::BSResource::Stream>* a_stream)> InsertNoCache{ REL::ID(69687) };
-inline static REL::Relocation<void(*)(void* a_cacheNode, void* a_mapRoot, RE::BSResource::ID* a_id, RE::BSTSmartPointer<RE::BSResource::Stream>* a_stream)> InsertWithCache{ REL::ID(69805) };
-inline static REL::Relocation<void(*)(void* a_globalState)> UpdateCache{ REL::ID(69939) };
+inline static REL::Relocation<const char*(*)(const char* a_name, const char* a_prefix, void* a_lookupTable)> StripPrefix{ REL::ID(StripPrefixID) }; 
+inline static REL::Relocation<void(*)(void* a_mapRoot, RE::BSResource::ID* a_id, RE::BSTSmartPointer<RE::BSResource::Stream>* a_stream)> InsertNoCache{ REL::ID(InsertNoCacheID) };
+inline static REL::Relocation<void(*)(void* a_cacheNode, void* a_mapRoot, RE::BSResource::ID* a_id, RE::BSTSmartPointer<RE::BSResource::Stream>* a_stream)> InsertWithCache{ REL::ID(InsertWithCacheID) };
+inline static REL::Relocation<void(*)(void* a_globalState)> UpdateCache{ REL::ID(UpdateCacheID) };
 
-inline static void *const *const CACHE_PTR = reinterpret_cast<void*const *const>(REL::ID(410420).address());
+inline static void *const *const CACHE_PTR = reinterpret_cast<void*const *const>(REL::ID(CacheID).address());
