@@ -1,7 +1,7 @@
+#include <crdw.h>
 #include <EventSource.h>
-#include <RE/L/LooseFileStream.h>
 
-void CustomProcessName(RE::BSResource::Traverser* a_this, const char* path, RE::BSResource::Location& location)
+void CRDW::ProcessName(RE::BSResource::Traverser* a_this, const char* path, RE::BSResource::Location& location)
 {
     const char* prefix = reinterpret_cast<const char*>(a_this->unkC8);
     void* lookup = reinterpret_cast<void*>(a_this->unkE8);
@@ -41,9 +41,10 @@ void CustomProcessName(RE::BSResource::Traverser* a_this, const char* path, RE::
             InsertWithCache(node, map, &id, &stream);
         }
     }
+    else { Log(spdlog::level::warn, "DoCreateStream failed {}", path); }
 
     BSResourceFileFoundEvent event{ path + 5, &id, &location };
-    
+
     auto* eventSources = RE::BSResource::EventSources::GetSingleton();
     auto* source = eventSources->GetFileFoundEventSource();
     source->SendEvent(&event);

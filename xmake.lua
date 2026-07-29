@@ -1,46 +1,40 @@
 set_xmakever("3.0.7")
 
--- Project details
-set_project("CRDW")
-set_version("1.0.2")
+local PROJECT_NAME = "CRDW"
+local PROJECT_VERSION = "1.1.0"
 
-add_defines("SKYRIM_SUPPORT_AE")
+set_project(PROJECT_NAME)
+set_version(PROJECT_VERSION)
 
--- CommonLibNG requires C++23 and a 64-bit target
 set_languages("c++23")
 set_arch("x64")
 set_encodings("utf-8")
 
-add_rules("mode.release", "mode.releasedbg")
+add_defines("SKYRIM_SUPPORT_AE")
+includes("extern/CommonLibSSE")
+
+add_rules("mode.release", "mode.releasedbg", "mode.debug")
 add_rules("plugin.compile_commands.autoupdate", {outputdir = ".vscode"})
 
 set_policy("build.optimization.lto", true)
 set_runtimes(is_mode("debug") and "MTd" or "MT")
 
--- 1. Include CommonLibSSE-NG's own xmake script from your extern folder
-includes("extern/CommonLibSSE")
-set_optimize("fastest")
-
-target("CRDW")
+target(PROJECT_NAME)
     set_kind("shared")
 
-    -- 2. Link against the commonlibsse-ng target provided by the submodule
     add_deps("commonlibsse")
 
-    -- 3. The plugin metadata rule is registered by the included submodule script
     add_rules("commonlibsse.plugin", {
-        name = "CRDW",
+        name = PROJECT_NAME,
         author = "Rixu",
-        version = "1.0.2",
+        version = PROJECT_VERSION,
         description = "Caches the Recrusive Directory Walk"
     })
 
-    add_cxflags("/Zl")
-    add_ldflags("/PDBALTPATH:%_PDB%")
-    set_strip("all")
+    add_cxflags("cl::/GF", "cl::/Gy")
+    add_ldflags("cl::/OPT:ICF")
 
-    -- Source files
     add_files("source/**.cpp")
-    add_includedirs("include")
+    add_includedirs("include", "source")
 
-    set_filename("CRDW.dll")
+    set_filename(PROJECT_NAME .. ".dll")

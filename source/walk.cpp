@@ -1,4 +1,4 @@
-#include <cache.h>
+#include <crdw.h>
 
 class DirectorySearch
 {
@@ -71,7 +71,7 @@ public:
     const uint64_t FileSize() const { return static_cast<uint64_t>(data.nFileSizeHigh) << 32 | static_cast<uint64_t>(data.nFileSizeLow); }
 };
 
-void CachingDirectoryRecursive(char* buffer, const char* relative, char* cursor, RE::BSResource::LooseFileLocation* location, std::ofstream& file)
+void CRDW::DirectoryRecursiveWalk(char* buffer, const char* relative, char* cursor, RE::BSResource::LooseFileLocation* location, std::ofstream& file)
 {
     for(DirectorySearch search(buffer); !search.Done(); search.Next())
     {
@@ -84,9 +84,9 @@ void CachingDirectoryRecursive(char* buffer, const char* relative, char* cursor,
             strcpy_s(cursor, remaining, search.FileName());
             strcat_s(cursor, remaining, "\\");
 
-            CachingDirectoryRecursive(
+            DirectoryRecursiveWalk(
                 buffer,
-                relative, 
+                relative,
                 cursor + strlen(search.FileName()) + 1,
                 location,
                 file
