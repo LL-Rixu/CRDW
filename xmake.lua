@@ -1,7 +1,8 @@
 set_xmakever("3.0.7")
 
 local PROJECT_NAME = "CRDW"
-local PROJECT_VERSION = "1.1.1b"
+local PROJECT_VERSION = "1.1.2"
+local PROJECT_STAGE = "Beta"
 
 set_project(PROJECT_NAME)
 set_version(PROJECT_VERSION)
@@ -28,22 +29,22 @@ set_runtimes(is_mode("debug") and "MTd" or "MT")
 target(PROJECT_NAME)
     set_kind("shared")
 
+    local build = "AE "
     if is_config("version", "AE") then
-        add_defines("SKYRIM_SUPPORT_AE")
-        PROJECT_VERSION = "AE " .. PROJECT_VERSION
-        PROJECT_NAME = PROJECT_NAME .. "_AE"
+        add_defines("SKYRIM_SUPPORT_AE=1")
     elseif is_config("version", "SE") then
-        PROJECT_VERSION = "SE " .. PROJECT_VERSION
-        PROJECT_NAME = PROJECT_NAME .. "_SE"
+        build = "SE "
     elseif is_config("version", "VR") then
-        PROJECT_VERSION = "VR " .. PROJECT_VERSION
-        PROJECT_NAME = PROJECT_NAME .. "_VR"
+        build = "VR "
     end
+
+    add_defines("PROJECT_NAME=\"" .. PROJECT_NAME .. " " .. PROJECT_STAGE .. "\"")
+    add_defines("PROJECT_VERSION=\"" .. build .. PROJECT_VERSION .. "\"")
 
     add_deps("commonlibsse")
 
     add_rules("commonlibsse.plugin", {
-        name = PROJECT_NAME,
+        name = PROJECT_NAME .. " " .. PROJECT_STAGE,
         author = "Rixu",
         version = PROJECT_VERSION,
         description = "Caches the Recrusive Directory Walk"
@@ -56,3 +57,33 @@ target(PROJECT_NAME)
     add_includedirs("include", "source")
 
     set_filename(PROJECT_NAME .. ".dll")
+
+after_build(function (target)
+        local build_dir = target:targetdir()
+        local dll_path = target:targetfile()
+        local ini_path = path.join(os.projectdir(), "CRDW.ini")
+        
+        local staging_dir = path.join(build_dir, "staging")
+        local plugin_dir = path.join(staging_dir, "Data/SKSE/Plugins")
+
+        local build = "AE "
+        if is_config("version", "SE") then
+            build = "SE "
+        elseif is_config("version", "VR") then
+            build = "VR "
+        end
+
+        os.tryrm(staging_dir)
+        os.mkdir(plugin_dir)
+
+        os.cp(dll_path, plugin_dir)
+        os.cp(ini_path, plugin_dir)
+
+        local archive_file = path.absolute(path.join(build_dir, build .. target:name() .. ".7z"))
+        
+        os.tryrm(archive_file)
+    
+        local exit_code = os.execv("7z", {"a", archive_file, "Data"}, {curdir = staging_dir})
+
+        os.tryrm(staging_dir)
+    end)
