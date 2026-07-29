@@ -18,7 +18,7 @@ public:
         instance = init();
         if(!instance) { return; }
         instance->set_pattern("[%g:%#] [%!] [%L] %v");
-        instance->flush_on(spdlog::level::critical);
+        instance->flush_on(spdlog::level::info);
 
         Log<__FILE__, __FUNCTION__, __LINE__, spdlog::level::info>("{}: Enabled Logging", name.c_str());
     }
