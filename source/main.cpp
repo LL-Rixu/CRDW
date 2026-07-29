@@ -63,9 +63,10 @@ void CRDW::CacheLoad(char* buffer, const char* relative, char* cursor, RE::BSRes
 
 void CRDW::MessageInterface(SKSE::MessagingInterface::Message* msg)
 {
-    if(msg->type != SKSE::MessagingInterface::kDataLoaded) { return; }
+    if(msg->type != SKSE::MessagingInterface::kPreLoadGame || !crdw) { return; }
 
-    crdw->~CRDW();
+    delete crdw;
+    crdw = nullptr;
 }
 
 CRDW::CRDW(): ini(), iobuffer(new char[ini["Optimization|IOBuffer"]], ini["Optimization|IOBuffer"]), logger(ini["General|Logging"], ini["General|LogFlush"])
@@ -107,22 +108,15 @@ CRDW::CRDW(): ini(), iobuffer(new char[ini["Optimization|IOBuffer"]], ini["Optim
     }
 
     SKSE::GetMessagingInterface()->RegisterListener(MessageInterface);
-
-    Log(spdlog::level::info, "Loaded CRDW");
 }
 
-CRDW::~CRDW()
-{
-    delete[] iobuffer.data();
-
-    Log(spdlog::level::info, "Unloaded CRDW");
-}
+CRDW::~CRDW() { delete[] iobuffer.data(); }
 
 SKSEPluginLoad(const SKSE::LoadInterface* skse)
 {
     SKSE::Init(skse, false);
 
-    static CRDW crdw;
+    new CRDW();
 
     return true;
 }
