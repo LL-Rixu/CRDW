@@ -17,7 +17,7 @@ public:
 
         instance = init();
         if(!instance) { return; }
-        instance->set_pattern("[%g:%#] [%!] [%L] %v");
+        instance->set_pattern("[%g:%#] [%!] [%t] [%L] %v");
         instance->flush_on(static_cast<spdlog::level::level_enum>(log_level));
 
         Log<__FILE__, __FUNCTION__, __LINE__, spdlog::level::info>("{} {}", name.c_str(), version.c_str());
