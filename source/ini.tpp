@@ -1,10 +1,11 @@
 static inline void defaults(std::unordered_map<std::string_view, std::variant<bool, int64_t, std::string_view>>& map)
 {
     /* General */
-    map["General|Logging"]   = true;
-    map["General|LogFlush"]  = 2;
-    map["General|ShowPopUp"] = true;
-    map["General|Mode"]      = "LOAD";
+    map["General|Logging"]        = true;
+    map["General|LogFlush"]       = 2;
+    map["General|ShowPopUp"]      = true;
+    map["General|Mode"]           = "LOAD";
+    map["General|CacheDirectory"] = "Data/SKSE/Plugins/";
 
     /* Optimization */
     map["Optimization|IOBuffer"]     = 65536;
