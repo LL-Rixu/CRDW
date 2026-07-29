@@ -22,9 +22,9 @@ public:
     inline static CRDW* crdw = nullptr;
 
     INI<"Data/SKSE/Plugins/CRDW.ini"> ini;
+    Logger<"CRDW"> logger;
     std::span<char> iobuffer;
     Hook<70050> hook;
-    Logger<"CRDW"> logger;
 
     template<auto f, typename... Args>
     void Fallback(Args&&... args)
