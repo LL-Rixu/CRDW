@@ -30,6 +30,7 @@ public:
         const uintptr_t address = REL::ID(id).address();
         REL::safe_write(address, bytes);
 
+        bytes.clear();
         loaded = false;
 
         Log(spdlog::level::info, "Remove");

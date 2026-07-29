@@ -19,6 +19,8 @@ class Cache: public MMAP<Entry>
 public:
     Cache(std::string& path, bool optimize = false): MMAP(path)
     {
+        Log(spdlog::level::info, "Opening: {}", path);
+
         if(optimize) { hook.Install(inlined(&entry, offsetof(Entry, size))); }
         else{ hook.Install(jmp64(GetSize)); }
     }

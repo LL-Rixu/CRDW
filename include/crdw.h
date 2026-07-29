@@ -23,7 +23,7 @@ public:
     inline static CRDW* crdw = nullptr;
 
     INI<"Data/SKSE/Plugins/CRDW.ini"> ini;
-    Logger<"CRDW"> logger;
+    Logger<PROJECT_NAME, PROJECT_VERSION> logger;
     std::span<char> iobuffer;
     Hook<WalkerID> hook;
 

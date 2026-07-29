@@ -1,6 +1,5 @@
 #pragma once
 
-#include <log.h>
 #include <string>
 #include <Windows.h>
 
@@ -81,8 +80,6 @@ public:
             0,
             0
         ));
-
-        Log(spdlog::level::info, "opened mmap {}", path);
     }
 
     ~MMAP()
@@ -91,6 +88,9 @@ public:
         if (hMap) { CloseHandle(hMap); }
         if (hFile != INVALID_HANDLE_VALUE) { CloseHandle(hFile); }
 
-        Log(spdlog::level::info, "closed mmap");
+        hFile = INVALID_HANDLE_VALUE;
+        hMap = nullptr;
+        map = nullptr;
+        size = 0;
     }
 };

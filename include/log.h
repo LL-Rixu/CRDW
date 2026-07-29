@@ -7,7 +7,7 @@
 #include <spdlog/sinks/msvc_sink.h>
 #include <spdlog/sinks/basic_file_sink.h>
 
-template<FixedString name>
+template<FixedString name, FixedString version>
 class Logger
 {
 public:
@@ -20,7 +20,7 @@ public:
         instance->set_pattern("[%g:%#] [%!] [%L] %v");
         instance->flush_on(static_cast<spdlog::level::level_enum>(log_level));
 
-        Log<__FILE__, __FUNCTION__, __LINE__, spdlog::level::info>("{}: Enabled Logging", name.c_str());
+        Log<__FILE__, __FUNCTION__, __LINE__, spdlog::level::info>("{} {}", name.c_str(), version.c_str());
     }
 
     ~Logger()
@@ -32,7 +32,7 @@ public:
         instance = nullptr;
     }
 
-    Logger(const Logger&) = delete; 
+    Logger(const Logger&) = delete;
 
     template<FixedString file, FixedString function, int64_t line, spdlog::level::level_enum lvl = spdlog::level::info, typename... Args>
     static void Log(spdlog::format_string_t<Args...> fmt, Args&&... args)
@@ -40,6 +40,7 @@ public:
         if(!instance) { return; }
 
         instance->log({file, line, function}, lvl, fmt, std::forward<Args>(args)...);
+        instance->flush();
     }
 
 private:
@@ -61,4 +62,4 @@ private:
     }
 };
 
-#define Log(lvl, ...) Logger<"CRDW">::Log<__FILE__, __FUNCTION__, __LINE__, lvl>(__VA_ARGS__)
+#define Log(lvl, ...) Logger<PROJECT_NAME, PROJECT_VERSION>::Log<__FILE__, __FUNCTION__, __LINE__, lvl>(__VA_ARGS__)
