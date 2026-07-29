@@ -2,7 +2,7 @@ static inline void defaults(std::unordered_map<std::string_view, std::variant<bo
 {
     /* General */
     map["General|Logging"] = true;
-    map["General|ShowPopUp"] = true;
+    map["General|ShowPopUp"] = true; // General|ShowPopUp
 
     /* Optimization */
     map["Optimization|IOBuffer"] = 65536;
@@ -17,7 +17,7 @@ static inline std::string_view makekey(std::vector<char>& buffer, std::string_vi
     buffer.push_back('|');
     buffer.insert(buffer.end(), key.begin(), key.end());
 
-    return { back, &buffer.back() };
+    return { back, &buffer.back() + 1 };
 }
 
 static inline bool getline(std::string_view& stream, std::string_view& line) 
