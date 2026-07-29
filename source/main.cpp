@@ -68,8 +68,8 @@ void CRDW::MessageInterface(SKSE::MessagingInterface::Message* msg)
     crdw->~CRDW();
 }
 
-CRDW::CRDW(): ini(), iobuffer(new char[ini["Optimization|IOBuffer"]], ini["Optimization|IOBuffer"]), logger(ini["General|Logging"])
-{ 
+CRDW::CRDW(): ini(), iobuffer(new char[ini["Optimization|IOBuffer"]], ini["Optimization|IOBuffer"]), logger(ini["General|Logging"], ini["General|LogFlush"])
+{
     crdw = this;
 
     Option mode = Option::LOAD;

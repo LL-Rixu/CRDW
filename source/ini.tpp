@@ -1,11 +1,13 @@
 static inline void defaults(std::unordered_map<std::string_view, std::variant<bool, int64_t, std::string_view>>& map)
 {
     /* General */
-    map["General|Logging"] = true;
-    map["General|ShowPopUp"] = true; // General|ShowPopUp
+    map["General|Logging"]   = true;
+    map["General|LogFlush"]  = 2;
+    map["General|ShowPopUp"] = true;
+    map["General|Mode"]      = "LOAD";
 
     /* Optimization */
-    map["Optimization|IOBuffer"] = 65536;
+    map["Optimization|IOBuffer"]     = 65536;
     map["Optimization|Experimental"] = false;
 }
 

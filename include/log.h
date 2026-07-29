@@ -11,14 +11,14 @@ template<FixedString name>
 class Logger
 {
 public:
-    Logger(bool enabled)
+    Logger(bool enabled, int log_level)
     {
         if(!enabled || instance) { return; }
 
         instance = init();
         if(!instance) { return; }
         instance->set_pattern("[%g:%#] [%!] [%L] %v");
-        instance->flush_on(spdlog::level::info);
+        instance->flush_on(static_cast<spdlog::level::level_enum>(log_level));
 
         Log<__FILE__, __FUNCTION__, __LINE__, spdlog::level::info>("{}: Enabled Logging", name.c_str());
     }
