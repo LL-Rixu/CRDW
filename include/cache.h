@@ -26,7 +26,9 @@ public:
         else { hook.Install(jmp64(GetSize)); }
     }
 
-   inline void SetEntry(const Entry* a_entry) { entry = a_entry; }
+    inline void UnHook() { hook.Remove(); }
+
+    inline void SetEntry(const Entry* a_entry) { entry = a_entry; }
 private:
     static bool GetSize(const char* path, uint64_t* size) 
     {

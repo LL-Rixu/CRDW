@@ -19,7 +19,7 @@ void CRDW::CacheGenerate(char* buffer, const char* relative, char* cursor, RE::B
 
     if(!file.is_open())
     {
-        Log(spdlog::level::critical, "failed to open/create cache {}", path);
+        Log(spdlog::level::critical, "Failed to open/create cache {}", path);
         return crdw->Fallback<CacheGenerate>(buffer, relative, cursor, traverser, location);
     }
 
@@ -30,8 +30,8 @@ void CRDW::CacheGenerate(char* buffer, const char* relative, char* cursor, RE::B
 
     if(!cache.Open())
     {
-        cache.~Cache();
-        Log(spdlog::level::critical, "failed to open cache {}", path);
+        cache.UnHook();
+        Log(spdlog::level::critical, "Failed to open cache {}", path);
         return crdw->Fallback<CacheGenerate>(buffer, relative, cursor, traverser, location);
     }
 
@@ -51,7 +51,7 @@ void CRDW::CacheLoad(char* buffer, const char* relative, char* cursor, RE::BSRes
 
     if(!cache.Open())
     {
-        cache.~Cache();
+        cache.UnHook();
         Log(spdlog::level::warn, "failed to open cache {}", path);
         return crdw->Fallback<CacheLoad>(buffer, relative, cursor, traverser, location);
     }
