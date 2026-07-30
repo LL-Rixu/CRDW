@@ -6,21 +6,27 @@ static inline void defaults(std::unordered_map<std::string_view, std::variant<bo
     map["General|ShowPopUp"]      = true;
     map["General|Mode"]           = "LOAD";
     map["General|CacheDirectory"] = "Data/SKSE/Plugins/";
+    map["General|Debug"]          = true;
 
     /* Optimization */
-    map["Optimization|IOBuffer"]     = 65536;
+    map["Optimization|IOBuffer"]     = 262144;
     map["Optimization|Experimental"] = false;
 }
 
-static inline std::string_view makekey(std::vector<char>& buffer, std::string_view& section, std::string_view& key)
+static inline std::pair<size_t, size_t> makepair(std::vector<char>& buffer, std::string_view& section, std::string_view& key)
 {
-    const char* back = &buffer.back() + 1;
+    size_t begin = buffer.size();
 
     buffer.insert(buffer.end(), section.begin(), section.end());
     buffer.push_back('|');
     buffer.insert(buffer.end(), key.begin(), key.end());
 
-    return { back, &buffer.back() + 1 };
+    return { begin, buffer.size() };
+}
+
+static inline std::string_view makekey(std::vector<char>& buffer, std::pair<size_t, size_t> offsets)
+{
+    return { &buffer[offsets.first], &buffer[offsets.second] };
 }
 
 static inline bool getline(std::string_view& stream, std::string_view& line) 
@@ -51,6 +57,9 @@ INI<Path>::INI(): MMAP(Path.c_str())
 
     if(!Open()) { return; }
 
+    std::vector<std::pair<std::pair<size_t, size_t>, VariantType>> buffer;
+    buffer.reserve(10);
+
     std::string_view section;
 
     std::string_view stream(Map(), Count());
@@ -76,22 +85,24 @@ INI<Path>::INI(): MMAP(Path.c_str())
         size_t colon = value.find(':');
         if (colon == std::string_view::npos || colon == 0) { continue; }
 
-        std::string_view fullkey = makekey(keys, section, key);
+        std::pair<size_t, size_t> inikey = makepair(keys, section, key);
 
         switch(value[0])
         {
-        case 'b': map[fullkey] = value.substr(colon + 1) == "true" ? true : false; break;
+        case 'b': buffer.emplace_back(inikey, (value.substr(colon + 1) == "true" ? true : false)); break;
         case 'i': 
         { 
             std::string_view number = value.substr(colon + 1);
             int64_t result = 0;
             auto [ptr, error] = std::from_chars(number.data(), number.data() + number.size(), result);
-            if(error == std::errc{}) { map[fullkey] = result; } 
+            if(error == std::errc{}) { buffer.emplace_back(inikey, result); } 
         }
         break;
-        case 's': map[fullkey] = value.substr(colon + 1); break;
+        case 's': buffer.emplace_back(inikey, value.substr(colon + 1)); break;
 
         default: continue;
         }
     }
+
+    for(auto [inikey, value] : buffer) { map[makekey(keys, inikey)] = value; }
 }
