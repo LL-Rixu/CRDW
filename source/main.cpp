@@ -65,7 +65,16 @@ void CRDW::CacheLoad(char* buffer, const char* relative, char* cursor, RE::BSRes
 
 void CRDW::MessageInterface(SKSE::MessagingInterface::Message* msg)
 {
-    if(msg->type != SKSE::MessagingInterface::kPreLoadGame || !crdw) { return; }
+    if(
+        (
+            msg->type != SKSE::MessagingInterface::kPreLoadGame && 
+            msg->type != SKSE::MessagingInterface::kNewGame
+        ) || 
+        !crdw
+    )
+    { return; }
+
+    Log(spdlog::level::info, "Unloaded");
 
     delete crdw;
     crdw = nullptr;
