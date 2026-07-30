@@ -83,7 +83,7 @@ after_build(function (target)
             os.cp(pdb_path, plugin_dir)
         end
 
-        if os.os.isfile(ini_path) then
+        if os.isfile(ini_path) then
             os.cp(ini_path, plugin_dir)
         end
 
