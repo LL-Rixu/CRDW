@@ -11,7 +11,7 @@ template<FixedString name, FixedString version>
 class Logger
 {
 public:
-    Logger(bool enabled, int log_level, bool debug)
+    Logger(bool enabled, int log_level, bool debug = false)
     {
         if(!enabled || instance) { return; }
 
@@ -21,7 +21,7 @@ public:
         instance->flush_on(static_cast<spdlog::level::level_enum>(log_level));
 
         const char* debug_print = debug ? "Debug Enabled" : "";
-        Log<__FILE__, __FUNCTION__, __LINE__, spdlog::level::info>("{} {} {}", name.c_str(), version.c_str(), debug_print);
+        Log<__FILE__, __FUNCTION__, __LINE__>("{} {} {}", name.c_str(), version.c_str(), debug_print);
     }
 
     ~Logger()
