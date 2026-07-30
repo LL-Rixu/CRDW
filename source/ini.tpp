@@ -6,7 +6,7 @@ static inline void defaults(std::unordered_map<std::string_view, std::variant<bo
     map["General|ShowPopUp"]      = true;
     map["General|Mode"]           = "LOAD";
     map["General|CacheDirectory"] = "Data/SKSE/Plugins/";
-    map["General|Debug"]          = true;
+    map["General|Debug"]          = false;
 
     /* Optimization */
     map["Optimization|IOBuffer"]     = 262144;
@@ -83,7 +83,7 @@ INI<Path>::INI(): MMAP(Path.c_str())
         std::string_view value = line.substr(equals + 1);
 
         size_t colon = value.find(':');
-        if (colon == std::string_view::npos || colon == 0) { continue; }
+        if(colon == std::string_view::npos || colon == 0) { continue; }
 
         std::pair<size_t, size_t> inikey = makepair(keys, section, key);
 
