@@ -11,7 +11,7 @@ template<FixedString name, FixedString version>
 class Logger
 {
 public:
-    Logger(bool enabled, int log_level)
+    Logger(bool enabled, int log_level, bool debug)
     {
         if(!enabled || instance) { return; }
 
@@ -20,7 +20,8 @@ public:
         instance->set_pattern("[%g:%#] [%!] [%t] [%L] %v");
         instance->flush_on(static_cast<spdlog::level::level_enum>(log_level));
 
-        Log<__FILE__, __FUNCTION__, __LINE__, spdlog::level::info>("{} {}", name.c_str(), version.c_str());
+        const char* debug_print = debug ? "Debug Enabled" : "";
+        Log<__FILE__, __FUNCTION__, __LINE__, spdlog::level::info>("{} {} {}", name.c_str(), version.c_str(), debug_print);
     }
 
     ~Logger()
@@ -40,10 +41,11 @@ public:
         if(!instance) { return; }
 
         instance->log({file, line, function}, lvl, fmt, std::forward<Args>(args)...);
-        instance->flush();
+        if(instance->debug){ instance->flush(); }
     }
 
 private:
+    bool debug = false;
     inline static spdlog::logger* instance = nullptr;
 
     static spdlog::logger* init()
