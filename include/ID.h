@@ -15,15 +15,15 @@
 
 #else
 
-#define WalkerID 68812
-#define GetSizeID 68327
+#define WalkerID 68707
+#define GetSizeID 68812
 
 #define EventSourcesID 523853
 #define CacheID 523854
 
-#define StripPrefixID 68597
-#define InsertNoCacheID 68452
-#define InsertWithCacheID 68509
-#define UpdateCacheID 68707
+#define StripPrefixID 68509
+#define InsertNoCacheID 68327
+#define InsertWithCacheID 68452
+#define UpdateCacheID 68597
 
 #endif
