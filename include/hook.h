@@ -19,8 +19,6 @@ public:
         REL::safe_write(address, payload);
 
         loaded = true;
-
-        Log(spdlog::level::info, "Install");
     }
 
     void Remove()
@@ -32,8 +30,6 @@ public:
 
         bytes.clear();
         loaded = false;
-
-        Log(spdlog::level::info, "Remove");
     }
 
     ~Hook() { Remove(); }
