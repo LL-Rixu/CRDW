@@ -18,7 +18,7 @@ std::vector<uint8_t> inlined(const void* address, const uint32_t offset)
     { 
         0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // movabs rax, entry
         0x48, 0x8B, 0x00,                                           // mov rax, [rax]
-        0x48, 0x8B, 0x80, 0x00, 0x00, 0x00, 0x00,                   // mov rax, [rax + offsetof(Entry,size)]
+        0x48, 0x8B, 0x80, 0x00, 0x00, 0x00, 0x00,                   // mov rax, [rax + offset]
         0x48, 0x89, 0x02,                                           // mov [rdx], rax
         0xB0, 0x01,                                                 // mov al, 1
         0xC3                                                        // ret

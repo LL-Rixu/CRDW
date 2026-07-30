@@ -17,17 +17,24 @@ public:
 class Cache: public MMAP<Entry>
 {
 public:
-    Cache(std::string& path, bool optimize = false): MMAP(path)
+    Cache(std::string& path, bool optimize = false, bool debug = false): MMAP(path)
     {
         Log(spdlog::level::info, "Opening: {}", path);
 
-        if(optimize) { hook.Install(inlined(&entry, offsetof(Entry, size))); }
-        else{ hook.Install(jmp64(GetSize)); }
+        if(debug) { hook.Install(jmp64(GetSizeDebug)); }
+        else if(optimize) { hook.Install(inlined(&entry, offsetof(Entry, size))); }
+        else { hook.Install(jmp64(GetSize)); }
     }
 
    inline void SetEntry(const Entry* a_entry) { entry = a_entry; }
 private:
     static bool GetSize(const char* path, uint64_t* size) 
+    {
+        *size = entry->size;
+        return true;
+    }
+
+    static bool GetSizeDebug(const char* path, uint64_t* size) 
     {
         size_t plen = strlen(path);
         size_t elen = strlen(entry->path);
