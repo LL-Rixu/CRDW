@@ -11,9 +11,11 @@ template<FixedString name, FixedString version>
 class Logger
 {
 public:
-    Logger(bool enabled, int log_level, bool debug = false)
+    Logger(bool enabled, int log_level, bool a_debug = false)
     {
         if(!enabled || instance) { return; }
+
+        debug = a_debug;
 
         instance = init();
         if(!instance) { return; }
@@ -41,11 +43,11 @@ public:
         if(!instance) { return; }
 
         instance->log({file, line, function}, lvl, fmt, std::forward<Args>(args)...);
-        if(instance->debug){ instance->flush(); }
+        if(debug){ instance->flush(); }
     }
 
 private:
-    bool debug = false;
+    inline static bool debug = false;
     inline static spdlog::logger* instance = nullptr;
 
     static spdlog::logger* init()

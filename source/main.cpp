@@ -10,6 +10,7 @@ void CRDW::CacheGenerate(char* buffer, const char* relative, char* cursor, RE::B
 
     std::string path = crdw->GetCachePath(relative);
 
+    auto& ini = crdw->ini;
     std::span<char>& iobuffer = crdw->iobuffer;
 
     std::ofstream file;
@@ -25,7 +26,7 @@ void CRDW::CacheGenerate(char* buffer, const char* relative, char* cursor, RE::B
     DirectoryRecursiveWalk(copy_buffer, copy_buffer + reloff, copy_buffer + curoff, location, file);
     file.close();
 
-    Cache cache(path, crdw->ini["Optimization|Experimental"]);
+    Cache cache(path, ini["Optimization|Experimental"], ini["General|Debug"]);
 
     if(!cache.Open())
     {
@@ -45,7 +46,8 @@ void CRDW::CacheLoad(char* buffer, const char* relative, char* cursor, RE::BSRes
 {
     std::string path = crdw->GetCachePath(relative);
 
-    Cache cache(path, crdw->ini["Optimization|Experimental"]);
+    auto& ini = crdw->ini;
+    Cache cache(path, ini["Optimization|Experimental"], ini["General|Debug"]);
 
     if(!cache.Open())
     {
@@ -69,7 +71,7 @@ void CRDW::MessageInterface(SKSE::MessagingInterface::Message* msg)
     crdw = nullptr;
 }
 
-CRDW::CRDW(): ini(), iobuffer(new char[ini["Optimization|IOBuffer"]], ini["Optimization|IOBuffer"]), logger(ini["General|Logging"], ini["General|LogFlush"])
+CRDW::CRDW(): ini(), iobuffer(new char[ini["Optimization|IOBuffer"]], ini["Optimization|IOBuffer"]), logger(ini["General|Logging"], ini["General|LogFlush"], ini["General|Debug"])
 {
     crdw = this;
 
