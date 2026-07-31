@@ -74,8 +74,6 @@ void CRDW::MessageInterface(SKSE::MessagingInterface::Message* msg)
     )
     { return; }
 
-    Log(spdlog::level::info, "Unloaded");
-
     delete crdw;
     crdw = nullptr;
 }
