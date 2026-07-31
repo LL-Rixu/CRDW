@@ -57,3 +57,41 @@ private:
     Hook<GetSizeID> hook;
 };
 
+class Accelerate
+{
+public:
+    Accelerate(bool optimize = false, bool debug = false)
+    {
+        if(debug) { hook.Install(jmp64(GetSizeDebug)); }
+        else if(optimize) { hook.Install(inlined(&entry, offsetof(Entry, size))); }
+        else { hook.Install(jmp64(GetSize)); }
+    }
+
+    inline void SetEntry(const Entry* a_entry) { entry = a_entry; }
+private:
+    static bool GetSize(const char* path, uint64_t* size) 
+    {
+        *size = entry->size;
+        return true;
+    }
+
+    static bool GetSizeDebug(const char* path, uint64_t* size) 
+    {
+        size_t plen = strlen(path);
+        size_t elen = strlen(entry->path);
+
+        size_t offset = plen - elen;
+
+        if(plen < elen) { Log(spdlog::level::critical, "{} > {}", path, entry->path); }
+        else if(strcmp(path + offset, entry->path))
+        {
+            Log(spdlog::level::critical, "{} != {}", path, entry->path);
+        }
+
+        *size = entry->size;
+        return true;
+    }
+
+    inline static const Entry* entry;
+    Hook<GetSizeID> hook;
+};

@@ -17,7 +17,8 @@ class CRDW
     { 
         CACHE,
         LOAD,
-        NATIVE 
+        ACCELERATE,
+        NATIVE
     };
 public:
     inline static CRDW* crdw = nullptr;
@@ -54,7 +55,12 @@ public:
 
     static void CacheLoad(char* buffer, const char* relative, char* cursor, RE::BSResource::Traverser* traverser, RE::BSResource::LooseFileLocation* location);
     static void CacheGenerate(char* buffer, const char* relative, char* cursor, RE::BSResource::Traverser* traverser, RE::BSResource::LooseFileLocation* location);
+    static void Accelerated(char* buffer, const char* relative, char* cursor, RE::BSResource::Traverser* traverser, RE::BSResource::LooseFileLocation* location);
     static void ProcessName(RE::BSResource::Traverser* a_this, const char* path, RE::BSResource::Location& location);
-    static void DirectoryRecursiveWalk(char* buffer, const char* relative, char* cursor, RE::BSResource::LooseFileLocation* location, std::ofstream& file);
     static void MessageInterface(SKSE::MessagingInterface::Message* msg);
+
+    template<typename F> 
+    static void DirectoryRecursiveWalk(char* buffer, const char* relative, char* cursor, RE::BSResource::LooseFileLocation* location, F&& f);
 };
+
+#include <walk.tpp>
