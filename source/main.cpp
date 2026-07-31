@@ -32,14 +32,39 @@ void CRDW::CacheGenerate(char* buffer, const char* relative, char* cursor, RE::B
 
     auto& ini = crdw->ini;
     std::span<char>& iobuffer = crdw->iobuffer;
+    size_t head = 0;
 
-    std::ofstream file;
-    file.rdbuf()->pubsetbuf(iobuffer.data(), iobuffer.size());
-    file.open(path, std::ios::binary | std::ios::trunc);
+    HANDLE hFile = CreateFileA(
+        path.c_str(),
+        GENERIC_WRITE,
+        0,
+        nullptr,
+        CREATE_ALWAYS,
+        FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN,
+        nullptr
+    );
 
-    if(!file.is_open())
+    if(hFile == INVALID_HANDLE_VALUE)
     {
-        Log(spdlog::level::critical, "Failed to open/create cache {}", path);
+        LPVOID message;
+        DWORD error = GetLastError();
+
+        if(FormatMessage(
+            FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+            FORMAT_MESSAGE_FROM_SYSTEM |
+            FORMAT_MESSAGE_IGNORE_INSERTS,
+            nullptr,
+            error,
+            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+            (LPTSTR)&message,
+            0, 
+            nullptr
+        ) != 0)
+        {
+            Log(spdlog::level::critical, "{} {}", path, reinterpret_cast<char*>(message));
+            LocalFree(message);
+        }
+
         return crdw->Fallback<CacheGenerate>(buffer, relative, cursor, traverser, location);
     }
 
@@ -48,12 +73,30 @@ void CRDW::CacheGenerate(char* buffer, const char* relative, char* cursor, RE::B
         copy_buffer + reloff,
         copy_buffer + curoff,
         location,
-        [&file] (const Entry* entry)
+        [hFile, &iobuffer, &head] (const Entry* entry)
         {
-            file.write(reinterpret_cast<const char*>(entry), sizeof(*entry));
+            [[unlikely]] if(head + sizeof(*entry) > iobuffer.size())
+            {
+                const size_t overwrite = head + sizeof(*entry) - iobuffer.size();
+                const size_t cut = sizeof(*entry) - overwrite;
+
+                std::memcpy(iobuffer.data() + head, entry, cut);
+                
+                WriteFile(hFile, iobuffer.data(), iobuffer.size(), nullptr, nullptr);
+
+                head = sizeof(*entry) - cut;
+                std::memcpy(iobuffer.data(), reinterpret_cast<const char*>(entry) + cut, head);
+            }
+            else
+            {
+                std::memcpy(iobuffer.data() + head, entry, sizeof(*entry));
+                head += sizeof(*entry);
+            }
         }
     );
-    file.close();
+
+    WriteFile(hFile, iobuffer.data(), head, nullptr, nullptr);
+    CloseHandle(hFile);
 
     CacheLoad(buffer, relative, cursor, traverser, location);
 }

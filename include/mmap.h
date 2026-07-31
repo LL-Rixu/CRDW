@@ -50,10 +50,10 @@ public:
             path.c_str(),
             Config.desiredAccess, 
             Config.shareMode, 
-            NULL, 
+            nullptr, 
             Config.creationDisposition, 
             Config.flagsAndAttributes, 
-            NULL
+            nullptr
         );
 
         if (hFile == INVALID_HANDLE_VALUE) { return; }
@@ -64,11 +64,11 @@ public:
 
         hMap = CreateFileMappingA(
             hFile, 
-            NULL, 
+            nullptr, 
             Config.flProtect, 
             0, 
             0, 
-            NULL
+            nullptr
         );
 
         if (!hMap) { return; }
