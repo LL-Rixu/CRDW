@@ -80,6 +80,9 @@ public:
             0,
             0
         ));
+
+        WIN32_MEMORY_RANGE_ENTRY range = { map, size };
+        PrefetchVirtualMemory(GetCurrentProcess(), 1, &range, 0);
     }
 
     ~MMAP()
