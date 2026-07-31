@@ -17,7 +17,7 @@ public:
 class Cache: public MMAP<Entry>
 {
 public:
-    Cache(std::string& path, bool optimize = false, bool debug = false): MMAP(path)
+    Cache(const std::string& path, bool optimize = false, bool debug = false): MMAP(path)
     {
         Log(spdlog::level::info, "Opening: {}", path);
 
