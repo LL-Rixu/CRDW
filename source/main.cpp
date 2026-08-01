@@ -31,7 +31,8 @@ void CRDW::CacheGenerate(char* buffer, const char* relative, char* cursor, RE::B
     const std::string path = crdw->GetCachePath(relative);
 
     auto& ini = crdw->ini;
-    std::span<char>& iobuffer = crdw->iobuffer;
+    const size_t size = ini["Optimization|IOBuffer"];
+    uint8_t* iobuffer = crdw->iobuffer;
     size_t head = 0;
 
     HANDLE hFile = CreateFileA(
@@ -73,29 +74,29 @@ void CRDW::CacheGenerate(char* buffer, const char* relative, char* cursor, RE::B
         copy_buffer + reloff,
         copy_buffer + curoff,
         location,
-        [hFile, &iobuffer, &head] (const Entry* entry)
+        [hFile, &iobuffer, size, &head] (const Entry* entry)
         {
-            [[unlikely]] if(head + sizeof(*entry) > iobuffer.size())
+            [[unlikely]] if(head + sizeof(*entry) > size)
             {
-                const size_t overwrite = head + sizeof(*entry) - iobuffer.size();
+                const size_t overwrite = head + sizeof(*entry) - size;
                 const size_t cut = sizeof(*entry) - overwrite;
 
-                std::memcpy(iobuffer.data() + head, entry, cut);
+                std::memcpy(iobuffer + head, entry, cut);
                 
-                WriteFile(hFile, iobuffer.data(), iobuffer.size(), nullptr, nullptr);
+                WriteFile(hFile, iobuffer, size, nullptr, nullptr);
 
                 head = sizeof(*entry) - cut;
-                std::memcpy(iobuffer.data(), reinterpret_cast<const char*>(entry) + cut, head);
+                std::memcpy(iobuffer, reinterpret_cast<const char*>(entry) + cut, head);
             }
             else
             {
-                std::memcpy(iobuffer.data() + head, entry, sizeof(*entry));
+                std::memcpy(iobuffer + head, entry, sizeof(*entry));
                 head += sizeof(*entry);
             }
         }
     );
 
-    WriteFile(hFile, iobuffer.data(), head, nullptr, nullptr);
+    WriteFile(hFile, iobuffer, head, nullptr, nullptr);
     CloseHandle(hFile);
 
     CacheLoad(buffer, relative, cursor, traverser, location);
@@ -137,7 +138,7 @@ void CRDW::MessageInterface(SKSE::MessagingInterface::Message* msg)
     crdw = nullptr;
 }
 
-CRDW::CRDW(): ini(), iobuffer(new char[ini["Optimization|IOBuffer"]], ini["Optimization|IOBuffer"]), logger(ini["General|Logging"], ini["General|LogFlush"], ini["General|Debug"])
+CRDW::CRDW(): ini(), logger(ini["General|Logging"], ini["General|LogFlush"], ini["General|Debug"])
 {
     crdw = this;
 
@@ -171,7 +172,10 @@ CRDW::CRDW(): ini(), iobuffer(new char[ini["Optimization|IOBuffer"]], ini["Optim
 
     switch(mode)
     {
-    case Option::CACHE: hook.Install(jmp64(CacheGenerate)); break;
+    case Option::CACHE: 
+    iobuffer = new uint8_t[ini["Optimization|IOBuffer"]];
+    hook.Install(jmp64(CacheGenerate));
+    break;
     case Option::LOAD: hook.Install(jmp64(CacheLoad)); break;
     case Option::ACCELERATE: hook.Install(jmp64(Accelerated)); break;
     default: break;
@@ -180,7 +184,12 @@ CRDW::CRDW(): ini(), iobuffer(new char[ini["Optimization|IOBuffer"]], ini["Optim
     SKSE::GetMessagingInterface()->RegisterListener(MessageInterface);
 }
 
-CRDW::~CRDW() { delete[] iobuffer.data(); }
+CRDW::~CRDW()
+{
+    if(!iobuffer) { return; }
+
+    delete[] iobuffer;
+}
 
 SKSEPluginLoad(const SKSE::LoadInterface* skse)
 {

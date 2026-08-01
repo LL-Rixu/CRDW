@@ -25,7 +25,7 @@ public:
 
     INI<"Data/SKSE/Plugins/CRDW.ini"> ini;
     Logger<PROJECT_NAME, PROJECT_VERSION> logger;
-    std::span<char> iobuffer;
+    uint8_t* iobuffer = nullptr;
     Hook<WalkerID> hook;
 
     template<auto f, typename... Args>
