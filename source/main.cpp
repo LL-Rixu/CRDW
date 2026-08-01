@@ -2,7 +2,7 @@
 
 void CRDW::Accelerated(char* buffer, const char* relative, char* cursor, RE::BSResource::Traverser* traverser, RE::BSResource::LooseFileLocation* location)
 {
-    Log(spdlog::level::info, "Accelered {}", relative);
+    Log(spdlog::level::info, "Accelerated {}", relative);
 
     auto& ini = crdw->ini;
     Accelerate accelerate(ini["Optimization|Experimental"], ini["General|Debug"]);
