@@ -100,5 +100,10 @@ void CRDW::DirectoryRecursiveWalk(char* buffer, const char* relative, char* curs
 
             function(&entry);
         }
+        else
+        {
+            strcpy_s(cursor, remaining, search.FileName());
+            Log(spdlog::level::info, "Not cached: {}", relative);
+        }
     }
 }

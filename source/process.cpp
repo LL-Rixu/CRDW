@@ -12,16 +12,12 @@ void CRDW::ProcessName(RE::BSResource::Traverser* a_this, const char* path, RE::
     id.GenerateFromPath(stripped);
 
     RE::BSResource::ID* lastID = reinterpret_cast<RE::BSResource::ID*>(&a_this->unkD0);
-    
-    uint32_t ext = *reinterpret_cast<uint32_t*>(id.ext);
-    uint32_t lastExt = *reinterpret_cast<uint32_t*>(lastID->ext);
 
-    if(lastExt != ext)
+    if(lastID->file != id.file)
     {
         a_this->unkE0 = 0;
         *lastID = id;
-
-        UpdateCache(*CACHE_PTR);
+        UpdateCache(*CACHE_PTR, id.file, &a_this->unkE0);
     }
 
     RE::BSTSmartPointer<RE::BSResource::Stream> stream;
@@ -43,7 +39,7 @@ void CRDW::ProcessName(RE::BSResource::Traverser* a_this, const char* path, RE::
     }
     else { Log(spdlog::level::warn, "DoCreateStream failed {}", path); }
 
-    BSResourceFileFoundEvent event{ path + 5, &id, &location };
+    BSResourceFileFoundEvent event{ stripped, &id, &location };
 
     auto* eventSources = RE::BSResource::EventSources::GetSingleton();
     auto* source = eventSources->GetFileFoundEventSource();

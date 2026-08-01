@@ -29,6 +29,6 @@ namespace RE::BSResource
 inline static REL::Relocation<const char*(*)(const char* a_name, const char* a_prefix, void* a_lookupTable)> StripPrefix{ REL::ID(StripPrefixID) }; 
 inline static REL::Relocation<void(*)(void* a_mapRoot, RE::BSResource::ID* a_id, RE::BSTSmartPointer<RE::BSResource::Stream>* a_stream)> InsertNoCache{ REL::ID(InsertNoCacheID) };
 inline static REL::Relocation<void(*)(void* a_cacheNode, void* a_mapRoot, RE::BSResource::ID* a_id, RE::BSTSmartPointer<RE::BSResource::Stream>* a_stream)> InsertWithCache{ REL::ID(InsertWithCacheID) };
-inline static REL::Relocation<void(*)(void* a_globalState)> UpdateCache{ REL::ID(UpdateCacheID) };
+inline static REL::Relocation<void(*)(void* a_globalState, uint32_t a_file, void* a_map)> UpdateCache{ REL::ID(UpdateCacheID) };
 
 inline static void *const *const CACHE_PTR = reinterpret_cast<void*const *const>(REL::ID(CacheID).address());
