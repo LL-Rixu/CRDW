@@ -1,7 +1,7 @@
 set_xmakever("3.0.7")
 
 local PROJECT_NAME = "CRDW"
-local PROJECT_VERSION = "1.1.3"
+local PROJECT_VERSION = "1.1.4"
 local PROJECT_STAGE = ""
 
 set_project(PROJECT_NAME)
