@@ -51,7 +51,7 @@ static inline bool getline(std::string_view& stream, std::string_view& line)
 template<FixedString Path>
 INI<Path>::INI(): MMAP(Path.c_str())
 {
-    keys.reserve(128);
+    keys.reserve(256);
 
     defaults(map);
 
