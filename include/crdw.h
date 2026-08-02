@@ -8,6 +8,7 @@
 #include <ini.h>
 #include <hook.h>
 #include <cache.h>
+#include <overwrite.h>
 
 /* Figure out where to put this */
 template<typename... T>
