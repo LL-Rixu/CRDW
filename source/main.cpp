@@ -324,6 +324,8 @@ CRDW::~CRDW()
 
 SKSEPluginLoad(const SKSE::LoadInterface* skse)
 {
+    overwrite::init();
+
     SKSE::Init(skse, false);
 
     new CRDW();

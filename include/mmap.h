@@ -1,7 +1,7 @@
 #pragma once
 
+#include <overwrite.h>
 #include <string>
-#include <Windows.h>
 
 struct MMAPConfig
 {
@@ -81,8 +81,10 @@ public:
             0
         ));
 
+        if(!overwrite::PrefetchVirtualMemory) { return; }
+
         WIN32_MEMORY_RANGE_ENTRY range = { map, size };
-        PrefetchVirtualMemory(GetCurrentProcess(), 1, &range, 0);
+        overwrite::PrefetchVirtualMemory(GetCurrentProcess(), 1, &range, 0);
     }
 
     ~MMAP()
