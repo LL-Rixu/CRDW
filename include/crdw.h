@@ -9,15 +9,42 @@
 #include <hook.h>
 #include <cache.h>
 
-#include <span>
+/* Figure out where to put this */
+template<typename... T>
+concept WStringVARG = (std::same_as<T, std::wstring_view> && ...);
+
+template<WStringVARG... T>
+inline size_t unitans(char* buffer, const size_t length, T... args)
+{
+    size_t n = 0;
+
+    (
+        (
+            n += WideCharToMultiByte(
+                CP_ACP,
+                0,
+                args.data(),
+                args.size(),
+                buffer + n,
+                length - n,
+                nullptr,
+                nullptr
+            )
+        ),
+        ...
+    );
+
+    buffer[n] = '\0';
+    return n;
+}
 
 class CRDW
 {
     enum class Option
     { 
         CACHE,
-        LOAD,
         ACCELERATE,
+        LOAD,
         NATIVE
     };
 public:
@@ -60,7 +87,10 @@ public:
     static void MessageInterface(SKSE::MessagingInterface::Message* msg);
 
     template<typename F> 
-    static void DirectoryRecursiveWalk(char* buffer, const char* relative, char* cursor, RE::BSResource::LooseFileLocation* location, F&& f);
+    static void DirectoryRecursiveWalkA(char* buffer, const char* relative, char* cursor, F&& function);
+
+    template<typename F>
+    static void DirectoryRecursiveWalkW(wchar_t* path, const size_t length, const wchar_t* const relative, F&& function);
 };
 
 #include <walk.tpp>
