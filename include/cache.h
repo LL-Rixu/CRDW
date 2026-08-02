@@ -11,6 +11,7 @@ public:
     char path[MAX_PATH];
     uint64_t size;
 
+    Entry() = default;
     Entry(const char* a_path, const uint64_t a_size): size(a_size) { strcpy_s(path, sizeof(path), a_path); }
 };
 
