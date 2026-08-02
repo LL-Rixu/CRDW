@@ -81,8 +81,10 @@ public:
     ~CRDW();
 
     static void CacheLoad(char* buffer, const char* relative, char* cursor, RE::BSResource::Traverser* traverser, RE::BSResource::LooseFileLocation* location);
-    static void CacheGenerate(char* buffer, const char* relative, char* cursor, RE::BSResource::Traverser* traverser, RE::BSResource::LooseFileLocation* location);
-    static void Accelerated(char* buffer, const char* relative, char* cursor, RE::BSResource::Traverser* traverser, RE::BSResource::LooseFileLocation* location);
+    static void CacheGenerateA(char* buffer, const char* relative, char* cursor, RE::BSResource::Traverser* traverser, RE::BSResource::LooseFileLocation* location);
+    static void CacheGenerateW(char* buffer, const char* relative, char* cursor, RE::BSResource::Traverser* traverser, RE::BSResource::LooseFileLocation* location);
+    static void AccelerateA(char* buffer, const char* relative, char* cursor, RE::BSResource::Traverser* traverser, RE::BSResource::LooseFileLocation* location);
+    static void AccelerateW(char* buffer, const char* relative, char* cursor, RE::BSResource::Traverser* traverser, RE::BSResource::LooseFileLocation* location);
     static void ProcessName(RE::BSResource::Traverser* a_this, const char* path, RE::BSResource::Location& location);
     static void MessageInterface(SKSE::MessagingInterface::Message* msg);
 
