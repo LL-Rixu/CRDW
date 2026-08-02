@@ -35,6 +35,7 @@ target(PROJECT_NAME)
     elseif is_config("version", "SE") then
         build = "SE "
     elseif is_config("version", "VR") then
+        add_defines("SKYRIM_SUPPORT_VR=1")
         build = "VR "
     end
 
